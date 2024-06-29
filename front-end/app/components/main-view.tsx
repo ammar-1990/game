@@ -213,29 +213,21 @@ const LeftLoginComponent = ({
         {/* Points */}
     <ControlComponent 
        title="Points"
-    value={points} setValueMinus={()=>{
-
-      if(points===0) return
-      setPoints(prev=>prev-1)
-    }}
-setValuePlus={()=>setPoints(prev=>prev+1)}
+    value={points} 
+    setValue={setPoints}
     
     />
 
       {/* Multiplier */}
       <ControlComponent
        title="Multiplier"
-      value={multiplier} setValueMinus={()=>{
-    
-
-if(multiplier===0) return
-setMultiplier(prev=>prev-1)
-}}
-setValuePlus={()=>setMultiplier(prev=>prev+1)}
+      value={multiplier}
+      setValue={setMultiplier}
 
 />
       </div>
       
+      <Button className="text-white bg-gradient-to-tr from-pink-600 to-orange-600 w-full mt-3 hover:opacity-90 transition">Start</Button>
 
     </div>
   </article>;
@@ -272,7 +264,7 @@ const ChatInput = ({
           handleMessage(chatInput);
           setChatInput("");
         }}
-        className="text-white bg-gradient-to-tr from-pink-600 to-orange-600"
+        className="text-white bg-gradient-to-tr from-pink-600 to-orange-600 hover:opacity-90 transition"
       >
         Start
       </Button>
@@ -282,15 +274,21 @@ const ChatInput = ({
 
 
 
-const ControlComponent = ({value,setValuePlus,setValueMinus,title}:{value:number,setValuePlus:()=>void,setValueMinus:()=>void,title:string})=>{
+const ControlComponent = ({value,setValue,title}:{value:number,setValue:Dispatch<SetStateAction<number>>,title:string})=>{
   return (
     <div className="rounded-lg border-gray-700 p-2 flex-1  border bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center">
     <span className="text-[7px] text-white">{title}</span>
     
     <div className="flex items-center gap-2 w-full mt-3">
-    <Button className="bg-transparent   w-6 h-6 border-gray-700 border text-gray-300 hover:text-gray-950" onClick={setValuePlus} variant={'secondary'} size={'icon'}><ChevronUp/></Button>
-    <span className="flex-1 text-center text-white bg-gray-950 p-1 rounded-md text-xs">{value}</span>
-    <Button className="bg-transparent  w-6 h-6  border-gray-700 border text-gray-300 hover:text-gray-950" onClick={setValueMinus} variant={'secondary'} size={'icon'}><ChevronDown /></Button>
+    <Button className="bg-transparent   w-6 h-6 border-gray-700 border text-gray-300 hover:text-gray-950" onClick={()=>{
+     
+      setValue(prev=>prev+1)}} 
+      
+      variant={'secondary'} size={'icon'}><ChevronUp/></Button>
+   <Input className="h-auto bg-gray-950 text-white border-none" type="number" value={value} onChange={(e)=>setValue(+e.target.value)} />
+    <Button className="bg-transparent  w-6 h-6  border-gray-700 border text-gray-300 hover:text-gray-950" onClick={()=>{
+      if(value===0) return
+      setValue(prev=>prev-1)}} variant={'secondary'} size={'icon'}><ChevronDown /></Button>
     </div>
     
           </div>

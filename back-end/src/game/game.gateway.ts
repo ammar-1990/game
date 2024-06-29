@@ -23,7 +23,7 @@ export class GameGateway {
     client.join('gameRoom');
     console.log('joined', data);
     const player = this.gameService.addPlayer(data.name, client.id);
-    
+
     client.emit('joinSuccess', { player });
     this.server.to('gameRoom').emit('playerJoined', data);
     this.server

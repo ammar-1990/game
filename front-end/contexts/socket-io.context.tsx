@@ -22,7 +22,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   useEffect(() => {
-    const newSocket = io('http://localhost:4000');
+    const newSocket = io(process.env.NEXT_PUBLIC_BACKEND!);
     setSocket(newSocket);
 
     return () => {

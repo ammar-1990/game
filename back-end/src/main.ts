@@ -2,13 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
 import { ServerOptions } from 'socket.io';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 class SocketIoAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
     options = {
       ...options,
       cors: {
-        origin: 'http://localhost:3000',
+        origin: process.env.FRONTEND_URL!,
         methods: ['GET', 'POST'],
         credentials: true,
       },

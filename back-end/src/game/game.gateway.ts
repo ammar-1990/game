@@ -8,6 +8,42 @@ import {
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
 
+const simplifyGameState = (gameState) => {
+  return {
+    players: gameState.players.map((player) => {
+      const finalPrediction =
+        player.predictions.length > 0
+          ? player.predictions[player.predictions.length - 1]
+          : null;
+
+      return {
+        id: player.id,
+        name: player.name,
+        points: player.points,
+        prediction: finalPrediction
+          ? {
+              pointsPlaced: finalPrediction.pointsPlaced,
+              predictedMultiplier: finalPrediction.predictedMultiplier,
+              roundId: finalPrediction.round.id,
+            }
+          : null,
+      };
+    }),
+    rounds: gameState.rounds.map((round) => ({
+      id: round.id,
+      multiplier: round.multiplier,
+      active: round.active,
+    })),
+    messages: gameState.messages.map((message) => ({
+      content: message.content,
+      player: {
+        id: message.player.id,
+        name: message.player.name,
+      },
+      timestamp: message.timestamp,
+    })),
+  };
+};
 @WebSocketGateway()
 export class GameGateway {
   @WebSocketServer()
@@ -37,19 +73,19 @@ export class GameGateway {
     // Create bots
     await this.gameService.addVirtualPlayers(sessionId);
 
-    client.emit('joinSuccess', { player });
-    client.emit('playerJoined', data);
+    client.emit('joinSuccess', JSON.stringify(player));
+    client.emit('playerJoined', JSON.stringify(data));
     const updatedData = await this.gameService.getGameState(sessionId);
-    client.emit('gameUpdate', updatedData);
+    client.emit('gameUpdate', JSON.stringify(updatedData));
   }
 
   @SubscribeMessage('makePrediction')
   async handleMakePrediction(
-    @MessageBody() data: { points: number; multiplier: number },
+    @MessageBody() data: { points: number; multiplier: number; speed: number },
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const sessionId = client.id;
-    console.log('the data', data);
+
     // Create prediction for the user
     await this.gameService.createPrediction(
       sessionId,
@@ -72,13 +108,14 @@ export class GameGateway {
     );
 
     //update user state
-    client.emit('playerUpdate', playerState);
+    client.emit('playerUpdate', JSON.stringify(playerState));
     this.server.to(sessionId).emit('putPrediction', {
       players: newState.players.map((p) => {
         const finalPrediction =
           p.predictions.length > 0
             ? p.predictions[p.predictions.length - 1]
             : null;
+
         return {
           id: p.id,
           name: p.name,
@@ -93,6 +130,35 @@ export class GameGateway {
         };
       }),
     });
+
+    const finalMultiplier = Math.random() * 5; // Generate random multiplier between 0 and 5
+    let currentMultiplier = 0;
+
+    // Simulate multiplier increment
+    const interval = setInterval(async () => {
+      currentMultiplier += 0.01;
+      this.server
+        .to(sessionId)
+        .emit('multiplierUpdate', JSON.stringify(currentMultiplier));
+
+      if (currentMultiplier >= finalMultiplier) {
+        clearInterval(interval);
+
+        // Evaluate winners
+        this.gameService.evaluateWinners(sessionId, finalMultiplier);
+
+        // Emit final results
+        const newState = await this.gameService.getGameState(sessionId);
+
+        // Get updated player state
+        const playerState = await this.gameService.getPlayerState(
+          sessionId,
+          client.id,
+        );
+        client.emit('playerUpdate', playerState);
+        this.server.to(sessionId).emit('roundEnd', simplifyGameState(newState));
+      }
+    }, 50 / data.speed);
   }
 
   @SubscribeMessage('sendMessage')
@@ -116,7 +182,9 @@ export class GameGateway {
         },
         timestamp: new Date(),
       };
-      this.server.to(sessionId).emit('chatMessage', chatMessage);
+      this.server
+        .to(sessionId)
+        .emit('chatMessage', JSON.stringify(chatMessage));
     }
   }
 }

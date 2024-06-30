@@ -8,7 +8,8 @@ export const useMainHook = () => {
   const [chatInput, setChatInput] = useState("");
   const [points, setPoints] = useState(0);
   const [multiplier, setMultiplier] = useState(0);
-  const [speed, setSpeed] = useState(0);
+  const [speed, setSpeed] = useState(1);
+ const [result, setResult] = useState<number | undefined>(undefined)
 
   const [time, setTime] = useState("");
 
@@ -70,44 +71,67 @@ export const useMainHook = () => {
   };
 
   function handleSendPrediction() {
-    if (emitEvent) emitEvent("makePrediction", { points, multiplier });
+    if(!points || !multiplier){
+      toast.error('points and multiplier are required')
+      return
+    }
+
+    if(player?.points && points > player?.points){
+      toast.error("you don't have this amount of points")
+      return
+    }
+    if (emitEvent) emitEvent("makePrediction", { points, multiplier,speed });
   }
 
   useEffect(() => {
     if (!socket) return;
 
     socket.on("playerJoined", (data) => {
-      toast.info(`${data.name} has joined`);
+      toast.info(`${JSON.parse(data).name} has joined`);
     });
 
     socket.on("joinSuccess", (player) => {
-      console.log("player", player.player);
+  
       dispatch({
         type: "SET_LOGGED",
-        payload: player.player as GameState["player"],
+        payload: JSON.parse(player) as GameState["player"],
       });
     });
 
     socket.on("gameUpdate", (data) => {
-      dispatch({ type: "SET_PLAYERS", payload: data.players });
-      dispatch({ type: "SET_ROUND", payload: data.round });
+      console.log("gameUpdate",JSON.parse(data))
+      dispatch({ type: "SET_PLAYERS", payload: JSON.parse(data).players });
+      dispatch({ type: "SET_ROUND", payload: JSON.parse(data).round });
 
-      dispatch({ type: "ADD_CHAT_MESSAGES", payload: data.messages });
+      dispatch({ type: "ADD_CHAT_MESSAGES", payload: JSON.parse(data).messages });
     });
 
     socket.on("putPrediction",(data)=>{
-      console.log('predictiondata',data.players)
+    
       dispatch({ type: "SET_PLAYERS", payload: data.players })
+    })
+    socket.on("multiplierUpdate",(data)=>{
+     
+    setResult(data)
     })
 
     socket.on("chatMessage", (message) => {
-      dispatch({ type: "ADD_CHAT_MESSAGE", payload: message });
+      console.log(message)
+      dispatch({ type: "ADD_CHAT_MESSAGE", payload: JSON.parse(message) });
       scroller?.current?.scrollIntoView({ behavior: "smooth" });
     });
     socket.on("playerUpdate", (data) => {
-      console.log("new player",data)
+    console.log("updated player",data)
       dispatch({ type: "SET_LOGGED", payload: data });
-      scroller?.current?.scrollIntoView({ behavior: "smooth" });
+  
+    });
+    socket.on("roundEnd", (data) => {
+      console.log("endRound",data)
+      dispatch({ type: "SET_PLAYERS", payload: data.players });
+      dispatch({ type: "SET_ROUND", payload: data.round });
+    
+
+  
     });
 
     return () => {
@@ -116,6 +140,7 @@ export const useMainHook = () => {
       socket.off("playerJoined");
       socket.off("joinSuccess");
       socket.off("putPrediction");
+      socket.off("multiplierUpdate");
     };
   }, [socket, dispatch]);
 
@@ -140,5 +165,6 @@ export const useMainHook = () => {
     speed,
     setSpeed,
     handleSendPrediction,
+    result
   };
 };

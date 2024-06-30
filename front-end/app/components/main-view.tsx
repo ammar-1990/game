@@ -40,6 +40,7 @@ const MainView = (props: Props) => {
     setSpeed,
     speed,
     handleSendPrediction,
+    result,
   } = useMainHook();
 
   return (
@@ -100,7 +101,14 @@ const MainView = (props: Props) => {
         </div>
 
         {/* bottom */}
-        <div className="border rounded-md p-4 mt-4 bg-slate-800 border-gray-700 flex-1"></div>
+        <div className="border rounded-md p-4 mt-4 bg-slate-800 border-gray-700 flex-1 text-white flex items-center justify-center font-bold">
+          {!!result && (
+            <span className="text-5xl font-bold min-w-[100px] px-20 bg-gradient-to-tr from-pink-400 to-orange-500 text-transparent bg-clip-text">
+              {" "}
+              {Number(result).toFixed(2)}x
+            </span>
+          )}
+        </div>
       </article>
 
       {/* end */}
@@ -275,17 +283,17 @@ const LeftLoginComponent = ({
           {!!players.length
             ? players.map((player, i) => (
                 <div
-                  key={player.id}
+                  key={player?.id}
                   className={cn(
                     "grid grid-cols-3 gap-1",
                     i % 2 === 0 ? "bg-slate-600" : "bg-slate-700"
                   )}
                 >
                   <span className="justify-self-center text-white text-[10px] py-1">
-                    {player.name}
+                    {player?.name}
                   </span>
                   <span className="justify-self-center text-white text-[10px] py-1">
-                    {player.prediction?.pointsPlaced}
+                    {player?.prediction?.pointsPlaced}
                   </span>
                   <span className="justify-self-center text-white text-[10px] py-1">
                     {player?.prediction?.predictedMultiplier || "-"}
@@ -310,7 +318,7 @@ const LeftLoginComponent = ({
 
       <div className="mt-4">
         <span className="flex items-center gap-2 text-white font-bold">
-          Speed
+          Speed {speed}
         </span>
         <div className="p-3 rounded-lg border border-gray-700">
           <Input

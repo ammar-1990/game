@@ -149,6 +149,8 @@ export class GameService {
       (p) => p.round === session.currentRound,
     );
 
+    console.log('players', activePlayers);
+
     return {
       players: activePlayers,
       rounds: session.rounds,
@@ -179,13 +181,7 @@ export class GameService {
       player.predictions.push(prediction);
       session.currentRound?.predictions.push(prediction);
 
-      console.log(
-        `Before deduction: Player ${player.name}, Points: ${player.points}`,
-      );
       player.points -= points;
-      console.log(
-        `After deduction: Player ${player.name}, Points: ${player.points}`,
-      );
     }
   }
 
@@ -213,6 +209,26 @@ export class GameService {
         bot.points -= randomPoints;
       }
     }
+  }
+
+  evaluateWinners(sessionId: string, finalMultiplier: number): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+
+    session.players.forEach((player) => {
+      const lastPrediction = player.predictions[player.predictions.length - 1];
+
+      if (
+        lastPrediction &&
+        lastPrediction.predictedMultiplier <= finalMultiplier
+      ) {
+        // Player wins
+        player.points =
+          player.points +
+          lastPrediction.pointsPlaced +
+          lastPrediction.pointsPlaced * lastPrediction.predictedMultiplier;
+      }
+    });
   }
 
   updateMultiplier(): void {

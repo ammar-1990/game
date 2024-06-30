@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { useMainHook } from "../hooks/main-hook";
 import { Button } from "@/components/ui/button";
+import { ChartData, ChartOptions } from 'chart.js';
 import {
   ChevronDown,
   ChevronUp,
@@ -12,10 +13,11 @@ import {
   User,
   UserRound,
 } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { useGameContext } from "@/contexts/game-context";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import IndicatorChart from "./Indicator";
 type Props = {};
 
 const MainView = (props: Props) => {
@@ -41,8 +43,48 @@ const MainView = (props: Props) => {
     speed,
     handleSendPrediction,
     result,
-  } = useMainHook();
+    loading,
+    hide
 
+  } = useMainHook();
+  const {
+    state: { players },
+  } = useGameContext();
+  const sortedPlayers = useMemo(() => {
+    if (!players.every((el) => el.prediction)) return players;
+    return players.sort((a, b) => {
+      if (a.prediction.win && b.prediction.win) {
+        return (
+          b.prediction.predictedMultiplier * b.prediction.pointsPlaced -
+          a.prediction.predictedMultiplier * a.prediction.pointsPlaced
+        );
+      }
+      if (a.prediction.win) return -1;
+      if (b.prediction.win) return 1;
+      return 0;
+    });
+  }, [players]);
+
+  const data: ChartData<'line'> = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Multiplier',
+        data: [],
+        borderColor: 'rgba(75,192,192,1)',
+        fill: false,
+      },
+    ],
+  };
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    scales: {
+      x: {
+        display: false,
+      },
+    },
+  };
   return (
     <div className="grid grid-cols-3 gap-3  ">
       {/* left */}
@@ -61,6 +103,7 @@ const MainView = (props: Props) => {
           setMultiplier={setMultiplier}
           setPoints={setPoints}
           setSpeed={setSpeed}
+          loading={loading}
         />
       )}
 
@@ -101,9 +144,10 @@ const MainView = (props: Props) => {
         </div>
 
         {/* bottom */}
-        <div className="border rounded-md p-4 mt-4 bg-slate-800 border-gray-700 flex-1 text-white flex items-center justify-center font-bold">
+        <div className="border rounded-md p-4 mt-4 relative bg-slate-800 border-gray-700 flex-1 text-white flex items-center justify-center font-bold">
+          {result && <IndicatorChart multiplier={result}  hide={hide}/>}
           {!!result && (
-            <span className="text-5xl font-bold min-w-[100px] px-20 bg-gradient-to-tr from-pink-400 to-orange-500 text-transparent bg-clip-text">
+            <span className="text-5xl font-bold absolute inset-0 top-1/2 left-1/2 translate-y-[-50%] translate-x-[-50%] h-fit block text-center min-w-[100px] px-20 bg-gradient-to-tr from-pink-400 to-orange-500 text-transparent bg-clip-text [textShadow:2px_2px_1px_white]">
               {" "}
               {Number(result).toFixed(2)}x
             </span>
@@ -118,7 +162,58 @@ const MainView = (props: Props) => {
           <span className="flex items-center gap-3 text-sm text-white font-semibold">
             <Trophy size={13} /> Ranking
           </span>
-          <div className="border-gray-700 rounded-md border p-3 mt-1 flex-1"></div>
+          <div className="border-gray-700 rounded-xl border overflow-hidden mt-3  ">
+            <div className="grid grid-cols-3 gap-1 py-1 bg-gray-800">
+              <span className="justify-self-center text-xs text-white font-semibold ">
+                No
+              </span>
+              <span className="justify-self-center text-xs text-white font-semibold ">
+                Name
+              </span>
+              <span className="justify-self-center text-xs text-white font-semibold ">
+                Score
+              </span>
+            </div>
+            {!!sortedPlayers.length
+              ? players.map((player, i) => (
+                  <div
+                    key={player?.id}
+                    className={cn(
+                      "grid grid-cols-3 gap-1 py-2",
+                      i % 2 === 0 ? "bg-slate-600" : "bg-slate-700"
+                    )}
+                  >
+                    <span className="justify-self-center text-white text-xs">
+                      {i + 1}
+                    </span>
+                    <span className="justify-self-center text-white text-xs">
+                      {player?.name}
+                    </span>
+                    <span className={cn("justify-self-center text-white text-xs")}>
+                      {player.prediction?.win === true
+                        ? (
+                            player.prediction?.pointsPlaced *
+                            player.prediction?.predictedMultiplier
+                          ).toFixed(0)
+                        : player.prediction?.win === false
+                        ? "0"
+                        : player.prediction?.pointsPlaced}
+                    </span>
+                  </div>
+                ))
+              : Array(5)
+                  .fill("")
+                  .map((_, index) => (
+                    <div
+                      key={`players-${index}`}
+                      className="grid grid-cols-3 gap-1"
+                    >
+                      <span className="justify-self-center text-white">-</span>
+                      <span className="justify-self-center text-white">-</span>
+                      <span className="justify-self-center text-white">-</span>
+                    </div>
+                  ))}
+          </div>
         </article>
 
         {/* right chat */}
@@ -128,7 +223,7 @@ const MainView = (props: Props) => {
           </span>
           <div className="border-gray-700 rounded-md border p-3 mt-1 flex-1 flex flex-col">
             {/* chat content */}
-            <div className="h-[200px] flex flex-col gap-1 overflow-y-auto    mb-2 ">
+            <div className="min-h-[100px] flex flex-col gap-1 overflow-y-auto    mb-2 ">
               {chat.map((message, i) => (
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
@@ -222,6 +317,7 @@ const LeftLoginComponent = ({
   setSpeed,
   speed,
   handleSendPrediction,
+  loading,
 }: {
   points: number;
   setPoints: Dispatch<SetStateAction<number>>;
@@ -230,6 +326,7 @@ const LeftLoginComponent = ({
   speed: number;
   setSpeed: Dispatch<SetStateAction<number>>;
   handleSendPrediction: () => void;
+  loading: boolean;
 }) => {
   const {
     state: { players },
@@ -257,6 +354,7 @@ const LeftLoginComponent = ({
         </div>
 
         <Button
+          disabled={loading}
           onClick={handleSendPrediction}
           className="text-white bg-gradient-to-tr from-pink-600 to-orange-600 w-full mt-3 hover:opacity-90 transition"
         >
@@ -289,13 +387,53 @@ const LeftLoginComponent = ({
                     i % 2 === 0 ? "bg-slate-600" : "bg-slate-700"
                   )}
                 >
-                  <span className="justify-self-center text-white text-[10px] py-1">
+                  <span
+                    className={cn(
+                      "justify-self-center text-white text-[10px] py-1",
+                      !player.prediction
+                        ? "text-white"
+                        : player.prediction.win === true
+                        ? "text-green-600"
+                        : !loading
+                        ? "text-rose-500"
+                        : "text-white"
+                    )}
+                  >
                     {player?.name}
                   </span>
-                  <span className="justify-self-center text-white text-[10px] py-1">
-                    {player?.prediction?.pointsPlaced}
+                  <span
+                    className={cn(
+                      "justify-self-center text-white text-[10px] py-1",
+                      !player.prediction
+                        ? "text-white"
+                        : player.prediction.win === true
+                        ? "text-green-600"
+                        : !loading
+                        ? "text-rose-500"
+                        : "text-white"
+                    )}
+                  >
+                    {player.prediction?.win === true
+                      ? (
+                          player.prediction?.pointsPlaced *
+                          player.prediction?.predictedMultiplier
+                        ).toFixed(0)
+                      : player.prediction?.win === false
+                      ? "0"
+                      : player.prediction?.pointsPlaced}
                   </span>
-                  <span className="justify-self-center text-white text-[10px] py-1">
+                  <span
+                    className={cn(
+                      "justify-self-center text-white text-[10px] py-1",
+                      !player.prediction
+                        ? "text-white"
+                        : player.prediction.win === true
+                        ? "text-green-600"
+                        : !loading
+                        ? "text-rose-500"
+                        : "text-white"
+                    )}
+                  >
                     {player?.prediction?.predictedMultiplier || "-"}
                   </span>
                 </div>

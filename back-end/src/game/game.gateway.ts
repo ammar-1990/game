@@ -24,6 +24,7 @@ const simplifyGameState = (gameState) => {
           ? {
               pointsPlaced: finalPrediction.pointsPlaced,
               predictedMultiplier: finalPrediction.predictedMultiplier,
+              win: finalPrediction.win,
               roundId: finalPrediction.round.id,
             }
           : null,

@@ -13,6 +13,9 @@ export class Prediction {
   @Column()
   pointsPlaced: number;
 
+  @Column({ default: false })
+  win: boolean;
+
   @ManyToOne(() => Player, (player) => player.predictions)
   player: Player;
 

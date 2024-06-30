@@ -9,7 +9,8 @@ type Player = {
 type Prediction = {
   id:string,
   predictedMultiplier:number,
-  pointsPlaced:number
+  pointsPlaced:number,
+  win:boolean
 }
 export type GameState ={
   players: (Player &{prediction:Prediction} )[];

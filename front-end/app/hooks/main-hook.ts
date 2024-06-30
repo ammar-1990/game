@@ -6,10 +6,12 @@ import { toast } from "sonner";
 export const useMainHook = () => {
   const [inputValue, setInputValue] = useState("");
   const [chatInput, setChatInput] = useState("");
-  const [points, setPoints] = useState(0);
-  const [multiplier, setMultiplier] = useState(0);
-  const [speed, setSpeed] = useState(1);
+  const [points, setPoints] = useState(100);
+  const [multiplier, setMultiplier] = useState(1.25);
+  const [speed, setSpeed] = useState(3);
  const [result, setResult] = useState<number | undefined>(undefined)
+ const [loading, setLoading] = useState(false)
+ const[hide,setHide] = useState(false)
 
   const [time, setTime] = useState("");
 
@@ -76,11 +78,21 @@ export const useMainHook = () => {
       return
     }
 
+    if(multiplier > 5) {
+      toast.error('Multiplier should be less or equal to 5')
+      return
+    }
+
     if(player?.points && points > player?.points){
       toast.error("you don't have this amount of points")
       return
     }
-    if (emitEvent) emitEvent("makePrediction", { points, multiplier,speed });
+    if (emitEvent) {
+      emitEvent("makePrediction", { points, multiplier,speed })
+      setLoading(true)
+      setHide(true)
+      setTimeout(()=>setHide(false),0)
+    };
   }
 
   useEffect(() => {
@@ -129,7 +141,7 @@ export const useMainHook = () => {
       console.log("endRound",data)
       dispatch({ type: "SET_PLAYERS", payload: data.players });
       dispatch({ type: "SET_ROUND", payload: data.round });
-    
+    setLoading(false)
 
   
     });
@@ -165,6 +177,8 @@ export const useMainHook = () => {
     speed,
     setSpeed,
     handleSendPrediction,
-    result
+    result,
+    loading,
+    hide
   };
 };

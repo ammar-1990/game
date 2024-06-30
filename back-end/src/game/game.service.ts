@@ -191,42 +191,47 @@ export class GameService {
 
     const bots = session.players.filter((p) => p.name.startsWith('Bot'));
     for (const bot of bots) {
-      const randomPoints = Math.min(
-        Math.floor(Math.random() * 100) + 1,
-        bot.points,
-      ); // Random points up to available
-      const randomMultiplier = parseFloat((Math.random() * 2 + 1).toFixed(2));
-      if (bot.points >= randomPoints) {
-        const prediction = new Prediction();
-        prediction.player = bot;
-        prediction.pointsPlaced = randomPoints;
-        prediction.predictedMultiplier = randomMultiplier;
-        prediction.round = session.currentRound;
-        bot.predictions.push(prediction);
-        session.currentRound?.predictions.push(prediction);
-
-        // Deduct points from bot
-        bot.points -= randomPoints;
+      let randomPoints;
+      if (bot.points <= 10) {
+        randomPoints = bot.points; // Use all remaining points if 10 or fewer
+      } else {
+        randomPoints = Math.min(
+          Math.floor(Math.random() * 100) + 1,
+          bot.points,
+        );
       }
+
+      const randomMultiplier = parseFloat((Math.random() * 5).toFixed(2));
+
+      const prediction = new Prediction();
+      prediction.player = bot;
+      prediction.pointsPlaced = randomPoints;
+      prediction.predictedMultiplier = randomMultiplier;
+      prediction.round = session.currentRound;
+      bot.predictions.push(prediction);
+      session.currentRound?.predictions.push(prediction);
+
+      // Deduct points from bot
+      bot.points -= randomPoints;
     }
   }
 
-  evaluateWinners(sessionId: string, finalMultiplier: number): void {
+  evaluateWinners(sessionId, finalMultiplier) {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
     session.players.forEach((player) => {
       const lastPrediction = player.predictions[player.predictions.length - 1];
 
-      if (
-        lastPrediction &&
-        lastPrediction.predictedMultiplier <= finalMultiplier
-      ) {
-        // Player wins
-        player.points =
-          player.points +
-          lastPrediction.pointsPlaced +
-          lastPrediction.pointsPlaced * lastPrediction.predictedMultiplier;
+      if (lastPrediction) {
+        lastPrediction.win =
+          lastPrediction.predictedMultiplier <= finalMultiplier;
+
+        if (lastPrediction.win) {
+          player.points =
+            player.points +
+            lastPrediction.pointsPlaced * lastPrediction.predictedMultiplier;
+        }
       }
     });
   }

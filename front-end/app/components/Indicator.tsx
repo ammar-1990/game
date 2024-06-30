@@ -41,8 +41,8 @@ const IndicatorChart: React.FC<IndicatorProps> = ({ multiplier ,hide}) => {
   return (
 
 
-    <div ref={containerRef} style={{ position: 'absolute', width: '95%', height: '300px', bottom:1}}>
-          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+    <div className='z20' ref={containerRef} style={{ position: 'absolute', width: '95%', height: '300px', bottom:1}}>
+          <svg className='z-20' style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
         <polyline
           fill="none"
           stroke="#D2691E"
@@ -51,7 +51,7 @@ const IndicatorChart: React.FC<IndicatorProps> = ({ multiplier ,hide}) => {
         />
       </svg>
       <div
-      className='bg-orange-700 blur-[1px]'
+      className='bg-orange-700 blur-[1px] z-20'
         style={{
           position: 'absolute',
           left: `${position.x}px`,

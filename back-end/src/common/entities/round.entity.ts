@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Prediction } from './prediction.entity';
+import { Player } from './player.entity';
 
 @Entity()
 export class Round {
@@ -14,4 +15,7 @@ export class Round {
 
   @OneToMany(() => Prediction, (prediction) => prediction.round)
   predictions: Prediction[];
+
+  @OneToMany(() => Player, (player) => player.round)
+  players: Player[];
 }

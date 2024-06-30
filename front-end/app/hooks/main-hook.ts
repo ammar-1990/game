@@ -33,8 +33,19 @@ export const useMainHook = () => {
       "text-green-500",
       "text-yellow-500",
       "text-indigo-500",
+      "text-purple-500",
+      "text-pink-500",
+      "text-teal-500",
+      "text-orange-500",
+      "text-gray-500",
     ];
-    const index = id.charCodeAt(0) % colors.length;
+    let hash = 0;
+
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const index = Math.abs(hash) % colors.length;
     return colors[index];
   };
 
@@ -58,6 +69,10 @@ export const useMainHook = () => {
     }
   };
 
+  function handleSendPrediction() {
+    if (emitEvent) emitEvent("makePrediction", { points, multiplier });
+  }
+
   useEffect(() => {
     if (!socket) return;
 
@@ -76,10 +91,22 @@ export const useMainHook = () => {
     socket.on("gameUpdate", (data) => {
       dispatch({ type: "SET_PLAYERS", payload: data.players });
       dispatch({ type: "SET_ROUND", payload: data.round });
+
+      dispatch({ type: "ADD_CHAT_MESSAGES", payload: data.messages });
     });
+
+    socket.on("putPrediction",(data)=>{
+      console.log('predictiondata',data.players)
+      dispatch({ type: "SET_PLAYERS", payload: data.players })
+    })
 
     socket.on("chatMessage", (message) => {
       dispatch({ type: "ADD_CHAT_MESSAGE", payload: message });
+      scroller?.current?.scrollIntoView({ behavior: "smooth" });
+    });
+    socket.on("playerUpdate", (data) => {
+      console.log("new player",data)
+      dispatch({ type: "SET_LOGGED", payload: data });
       scroller?.current?.scrollIntoView({ behavior: "smooth" });
     });
 
@@ -88,6 +115,7 @@ export const useMainHook = () => {
       socket.off("chatMessage");
       socket.off("playerJoined");
       socket.off("joinSuccess");
+      socket.off("putPrediction");
     };
   }, [socket, dispatch]);
 
@@ -111,5 +139,6 @@ export const useMainHook = () => {
     setMultiplier,
     speed,
     setSpeed,
+    handleSendPrediction,
   };
 };

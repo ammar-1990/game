@@ -1,6 +1,13 @@
-import { Entity, Column, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+} from 'typeorm';
 import { Prediction } from './prediction.entity';
 import { ChatMessage } from './chat-message.entity';
+import { Round } from './round.entity';
 
 @Entity()
 export class Player {
@@ -12,6 +19,9 @@ export class Player {
 
   @Column({ default: 0 })
   points: number;
+
+  @ManyToOne(() => Round, (round) => round.players)
+  round: Round;
 
   @OneToMany(() => Prediction, (prediction) => prediction.player)
   predictions: Prediction[];

@@ -3,7 +3,15 @@
 import { Input } from "@/components/ui/input";
 import { useMainHook } from "../hooks/main-hook";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Clock, MessageCircle, Trophy, User, UserRound } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  MessageCircle,
+  Trophy,
+  User,
+  UserRound,
+} from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import { useGameContext } from "@/contexts/game-context";
 import { motion } from "framer-motion";
@@ -31,6 +39,7 @@ const MainView = (props: Props) => {
     setPoints,
     setSpeed,
     speed,
+    handleSendPrediction,
   } = useMainHook();
 
   return (
@@ -44,6 +53,7 @@ const MainView = (props: Props) => {
         />
       ) : (
         <LeftLoginComponent
+          handleSendPrediction={handleSendPrediction}
           multiplier={multiplier}
           points={points}
           speed={speed}
@@ -111,10 +121,16 @@ const MainView = (props: Props) => {
           <div className="border-gray-700 rounded-md border p-3 mt-1 flex-1 flex flex-col">
             {/* chat content */}
             <div className="h-[200px] flex flex-col gap-1 overflow-y-auto    mb-2 ">
-              {chat.map((message) => (
+              {chat.map((message, i) => (
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
+                  animate={{
+                    y: 0,
+                    opacity: 1,
+                    transition: {
+                      delay: message.player.id.startsWith("Bot") ? i * 0.5 : 0,
+                    },
+                  }}
                   key={message.player.id}
                   className="flex items-center gap-3"
                 >
@@ -196,41 +212,129 @@ const LeftLoginComponent = ({
   setMultiplier,
   setPoints,
   setSpeed,
-  speed
+  speed,
+  handleSendPrediction,
 }: {
   points: number;
-  setPoints:Dispatch<SetStateAction<number>>;
+  setPoints: Dispatch<SetStateAction<number>>;
   multiplier: number;
-  setMultiplier:Dispatch<SetStateAction<number>>;
+  setMultiplier: Dispatch<SetStateAction<number>>;
   speed: number;
-  setSpeed:Dispatch<SetStateAction<number>>;
+  setSpeed: Dispatch<SetStateAction<number>>;
+  handleSendPrediction: () => void;
 }) => {
-  return <article className="col-span-1 p-3 border border-gray-700 rounded-md bg-slate-800">
-    {/* top */}
+  const {
+    state: { players },
+  } = useGameContext();
+  return (
+    <article className="col-span-1 p-3  ">
+      {/* top */}
 
-    <div className="">
-      <div className="flex items-center gap-3 ">
-        {/* Points */}
-    <ControlComponent 
-       title="Points"
-    value={points} 
-    setValue={setPoints}
-    
-    />
+      <div className="">
+        <div className="flex items-center gap-3 ">
+          {/* Points */}
+          <ControlComponent
+            title="Points"
+            value={points}
+            setValue={setPoints}
+          />
 
-      {/* Multiplier */}
-      <ControlComponent
-       title="Multiplier"
-      value={multiplier}
-      setValue={setMultiplier}
+          {/* Multiplier */}
+          <ControlComponent
+            multiplier
+            title="Multiplier"
+            value={multiplier}
+            setValue={setMultiplier}
+          />
+        </div>
 
-/>
+        <Button
+          onClick={handleSendPrediction}
+          className="text-white bg-gradient-to-tr from-pink-600 to-orange-600 w-full mt-3 hover:opacity-90 transition"
+        >
+          Start
+        </Button>
       </div>
-      
-      <Button className="text-white bg-gradient-to-tr from-pink-600 to-orange-600 w-full mt-3 hover:opacity-90 transition">Start</Button>
+      {/* statistics */}
+      <div className="mt-4">
+        <span className="flex items-center gap-2 text-white font-bold">
+          <Trophy fill="white" /> Current Round
+        </span>
+        <div className="border-gray-700 rounded-xl border overflow-hidden mt-3">
+          <div className="grid grid-cols-3 gap-1 py-1 bg-gray-800">
+            <span className="justify-self-center text-xs text-white font-semibold ">
+              Name
+            </span>
+            <span className="justify-self-center text-xs text-white font-semibold ">
+              Points
+            </span>
+            <span className="justify-self-center text-xs text-white font-semibold ">
+              Multiplier
+            </span>
+          </div>
+          {!!players.length
+            ? players.map((player, i) => (
+                <div
+                  key={player.id}
+                  className={cn(
+                    "grid grid-cols-3 gap-1",
+                    i % 2 === 0 ? "bg-slate-600" : "bg-slate-700"
+                  )}
+                >
+                  <span className="justify-self-center text-white text-[10px] py-1">
+                    {player.name}
+                  </span>
+                  <span className="justify-self-center text-white text-[10px] py-1">
+                    {player.prediction?.pointsPlaced}
+                  </span>
+                  <span className="justify-self-center text-white text-[10px] py-1">
+                    {player?.prediction?.predictedMultiplier || "-"}
+                  </span>
+                </div>
+              ))
+            : Array(5)
+                .fill("")
+                .map((_, index) => (
+                  <div
+                    key={`players-${index}`}
+                    className="grid grid-cols-3 gap-1"
+                  >
+                    <span>-</span>
+                    <span>-</span>
+                    <span>-</span>
+                  </div>
+                ))}
+        </div>
+      </div>
+      {/* Speed */}
 
-    </div>
-  </article>;
+      <div className="mt-4">
+        <span className="flex items-center gap-2 text-white font-bold">
+          Speed
+        </span>
+        <div className="p-3 rounded-lg border border-gray-700">
+          <Input
+            type="range"
+            step={1}
+            max={5}
+            min={1}
+            className="w-full"
+            value={speed}
+            onChange={(e) => setSpeed(+e.target.value)}
+          />
+          <span className="flex items-center justify-between px-2 mt-2">
+            {Array(5)
+              .fill("")
+              .map((_, i) => (
+                <span className={cn("text-xs text-white ")} key={i}>
+                  {i + 1}x
+                </span>
+              ))}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
 };
 
 const ChatInput = ({
@@ -272,25 +376,50 @@ const ChatInput = ({
   );
 };
 
-
-
-const ControlComponent = ({value,setValue,title}:{value:number,setValue:Dispatch<SetStateAction<number>>,title:string})=>{
+const ControlComponent = ({
+  value,
+  setValue,
+  title,
+  multiplier,
+}: {
+  value: number;
+  setValue: Dispatch<SetStateAction<number>>;
+  title: string;
+  multiplier?: boolean;
+}) => {
   return (
     <div className="rounded-lg border-gray-700 p-2 flex-1  border bg-gradient-to-br from-gray-900 to-gray-800 flex flex-col items-center">
-    <span className="text-[7px] text-white">{title}</span>
-    
-    <div className="flex items-center gap-2 w-full mt-3">
-    <Button className="bg-transparent   w-6 h-6 border-gray-700 border text-gray-300 hover:text-gray-950" onClick={()=>{
-     
-      setValue(prev=>prev+1)}} 
-      
-      variant={'secondary'} size={'icon'}><ChevronUp/></Button>
-   <Input className="h-auto bg-gray-950 text-white border-none" type="number" value={value} onChange={(e)=>setValue(+e.target.value)} />
-    <Button className="bg-transparent  w-6 h-6  border-gray-700 border text-gray-300 hover:text-gray-950" onClick={()=>{
-      if(value===0) return
-      setValue(prev=>prev-1)}} variant={'secondary'} size={'icon'}><ChevronDown /></Button>
+      <span className="text-[7px] text-white">{title}</span>
+
+      <div className="flex items-center gap-2 w-full mt-3">
+        <Button
+          className="bg-transparent   w-6 h-6 border-gray-700 border text-gray-300 hover:text-gray-950"
+          onClick={() => {
+            setValue((prev) => prev + (multiplier ? 0.25 : 1));
+          }}
+          variant={"secondary"}
+          size={"icon"}
+        >
+          <ChevronUp />
+        </Button>
+        <Input
+          className="h-auto bg-gray-950 text-white border-none"
+          type="number"
+          value={value}
+          onChange={(e) => setValue(+e.target.value)}
+        />
+        <Button
+          className="bg-transparent  w-6 h-6  border-gray-700 border text-gray-300 hover:text-gray-950"
+          onClick={() => {
+            if (value === 0) return;
+            setValue((prev) => prev - (multiplier ? 0.25 : 1));
+          }}
+          variant={"secondary"}
+          size={"icon"}
+        >
+          <ChevronDown />
+        </Button>
+      </div>
     </div>
-    
-          </div>
-  )
-}
+  );
+};

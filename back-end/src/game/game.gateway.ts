@@ -132,8 +132,8 @@ export class GameGateway {
       }),
     });
 
-    const finalMultiplier = Math.random() * 5; // Generate random multiplier between 0 and 5
-    let currentMultiplier = 0;
+    const finalMultiplier = Math.random() * 4 + 1; // Generate random multiplier between 1 and 5
+    let currentMultiplier = 1;
 
     // Simulate multiplier increment
     const interval = setInterval(async () => {

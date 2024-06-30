@@ -21,11 +21,11 @@ const IndicatorChart: React.FC<IndicatorProps> = ({ multiplier ,hide}) => {
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
 
-        const x = (multiplier / 5) * containerWidth;
+        const x = ((multiplier - 1) / 4) * containerWidth;
         const y = Math.exp(multiplier - 1) * (containerHeight / Math.exp(4));
 
         setPosition({ x, y });
-        setPath((prevPath) => [...prevPath, { x, y:y-70 }]);
+        setPath((prevPath) => [...prevPath, { x, y:y-75 }]);
       }
     };
 
@@ -55,7 +55,7 @@ const IndicatorChart: React.FC<IndicatorProps> = ({ multiplier ,hide}) => {
         style={{
           position: 'absolute',
           left: `${position.x}px`,
-          top: `${250 - position.y}px`,
+          top: `${255 - position.y}px`,
           transform: 'translate(-50%,50%)',
           width: '20px',
           height: '20px',

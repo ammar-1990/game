@@ -223,7 +223,7 @@ const MainView = (props: Props) => {
           </span>
           <div className="border-gray-700 rounded-md border p-3 mt-1 flex-1 flex flex-col">
             {/* chat content */}
-            <div className="min-h-[100px] flex flex-col gap-1 overflow-y-auto    mb-2 ">
+            <div className="min-h-[100px] max-h-[150px] flex flex-col gap-1 overflow-y-auto    mb-2  scroll">
               {chat.map((message, i) => (
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}

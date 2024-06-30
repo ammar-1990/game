@@ -131,3 +131,12 @@
     border-radius: 50%;
     box-shadow: 0 0 2px #000;
   }
+
+
+  .scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scroll::-webkit-scrollbar-thumb {
+    @apply bg-orange-600 rounded-full
+  }

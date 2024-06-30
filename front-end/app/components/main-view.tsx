@@ -558,7 +558,7 @@ const ControlComponent = ({
           className="bg-transparent  w-6 h-6  border-gray-700 border text-gray-300 hover:text-gray-950"
           onClick={() => {
             if (value === 0) return;
-            setValue((prev) => prev - (multiplier ? 0.25 : 1));
+            setValue((prev) =>(prev > 1 ? prev - (multiplier ? 0.25 : 1) : 1));
           }}
           variant={"secondary"}
           size={"icon"}

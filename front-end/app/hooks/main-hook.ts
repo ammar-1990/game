@@ -83,6 +83,10 @@ export const useMainHook = () => {
       return
     }
 
+    if(multiplier < 1){
+      toast.error("Multiplier should be atleast 1")
+      return
+    }
     if(player?.points && points > player?.points){
       toast.error("you don't have this amount of points")
       return

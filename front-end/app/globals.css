@@ -135,6 +135,7 @@
 
   .scroll::-webkit-scrollbar {
     width: 4px;
+    height: 4px;
   }
 
   .scroll::-webkit-scrollbar-thumb {

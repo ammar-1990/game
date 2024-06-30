@@ -162,8 +162,8 @@ const MainView = (props: Props) => {
           <span className="flex items-center gap-3 text-sm text-white font-semibold">
             <Trophy size={13} /> Ranking
           </span>
-          <div className="border-gray-700 rounded-xl border overflow-hidden mt-3  ">
-            <div className="grid grid-cols-3 gap-1 py-1 bg-gray-800">
+          <div className="border-gray-700 rounded-md border overflow-hidden mt-1  flex-1 flex flex-col ">
+            <div className="grid grid-cols-3 gap-1 py-1 bg-gray-800 flex-1  max-h-[35px] items-center">
               <span className="justify-self-center text-xs text-white font-semibold ">
                 No
               </span>
@@ -179,7 +179,7 @@ const MainView = (props: Props) => {
                   <div
                     key={player?.id}
                     className={cn(
-                      "grid grid-cols-3 gap-1 py-2",
+                      "grid grid-cols-3 gap-1 py-2 flex-1 items-center",
                       i % 2 === 0 ? "bg-slate-600" : "bg-slate-700"
                     )}
                   >
@@ -206,7 +206,7 @@ const MainView = (props: Props) => {
                   .map((_, index) => (
                     <div
                       key={`players-${index}`}
-                      className="grid grid-cols-3 gap-1"
+                      className="grid grid-cols-3 gap-1 flex-1"
                     >
                       <span className="justify-self-center text-white">-</span>
                       <span className="justify-self-center text-white">-</span>

@@ -230,7 +230,6 @@ export class GameService {
         if (lastPrediction.win) {
           player.points =
             player.points +
-            lastPrediction.pointsPlaced +
             lastPrediction.pointsPlaced * lastPrediction.predictedMultiplier;
         }
       }

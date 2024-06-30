@@ -147,7 +147,7 @@ const MainView = (props: Props) => {
         <div className="border rounded-md p-4 mt-4 relative bg-slate-800 border-gray-700 flex-1 text-white flex items-center justify-center font-bold">
           {result && <IndicatorChart multiplier={result}  hide={hide}/>}
           {!!result && (
-            <span className="text-5xl font-bold absolute inset-0 top-1/2 left-1/2 translate-y-[-50%] translate-x-[-50%] h-fit block text-center min-w-[100px] px-20 bg-gradient-to-tr from-pink-400 to-orange-500 text-transparent bg-clip-text [textShadow:2px_2px_1px_white]">
+            <span className="text-5xl font-bold absolute inset-0 top-1/2 left-1/2 translate-y-[-50%] translate-x-[-50%] h-fit block text-center min-w-[100px] px-20 bg-gradient-to-tr from-pink-400 to-orange-500 text-transparent bg-clip-text  ">
               {" "}
               {Number(result).toFixed(2)}x
             </span>

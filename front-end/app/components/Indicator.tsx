@@ -45,7 +45,7 @@ const IndicatorChart: React.FC<IndicatorProps> = ({ multiplier ,hide}) => {
           <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
         <polyline
           fill="none"
-          stroke="orange"
+          stroke="#D2691E"
           strokeWidth="3"
           points={path.map((p) => `${p.x},${200 - p.y}`).join(' ')}
         />

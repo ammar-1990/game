@@ -78,6 +78,11 @@ export const useMainHook = () => {
       return
     }
 
+    if(player?.points===0){
+      toast.error('Youd have zero points')
+      return
+    }
+
     if(multiplier > 5) {
       toast.error('Multiplier should be less or equal to 5')
       return
